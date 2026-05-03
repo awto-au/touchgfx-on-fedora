@@ -1,6 +1,21 @@
 # TouchGFX Designer 4.26.1 on Fedora Linux (via Wine)
 
-Guide for installing and running TouchGFX Designer under Wine on Fedora 43, including headless CLI code generation for CI/CD workflows.
+Complete guide for installing and running ST's TouchGFX Designer under Wine on Fedora Linux, with headless CLI code generation for CI/CD workflows.
+
+**Created with GitHub Copilot (Claude Haiku 4.5)**  
+Testing & documentation: Dan Selwyn (awto-au)  
+May 2026
+
+## Versions Tested
+
+| Component | Version |
+|-----------|---------|
+| **OS** | Fedora 43 |
+| **Wine** | wine-staging 11.0-2.fc43.x86_64 |
+| **Winetricks** | 20260125-1.fc43.noarch |
+| **TouchGFX Designer** | 4.26.1 |
+| **.NET Framework** | 4.8 |
+| **Visual C++ Runtime** | 2022 |
 
 > **Note:** TouchGFX Designer has no native Linux support. ST employees suggest Wine as the supported workaround. A native Linux CLI is planned but has no release timeline (as of 2026).
 
@@ -210,3 +225,36 @@ Cosmetic only — the installation completes successfully. Can be ignored.
 **Cause:** A leftover Wine process in the prefix is keeping the wineserver alive, so `wineserver -w` blocks indefinitely.
 
 **Fix:** From a second terminal, run `WINEPREFIX=~/.wine-touchgfx wineserver -k` to kill all Wine processes. Repeat for each font that hangs (up to ~10 times).
+
+---
+
+## 11. Flashing firmware to hardware (STM32CubeProgrammer)
+
+The Designer's `Flash` build step calls `STM32CubeProgrammer` to program the board via USB/ST-Link. Wine cannot easily support USB device passthrough on Linux.
+
+**Recommended: Use the native Linux version of STM32CubeProgrammer instead.**
+
+### Install STM32CubeProgrammer (native Linux)
+
+1. Download from ST: [stm32cubeprog.html](https://www.st.com/en/development-tools/stm32cubeprog.html) (requires ST account)
+2. Extract and install:
+   ```bash
+   unzip STM32CubeProgrammer_Linux_x64.zip
+   cd STM32CubeProgrammer
+   ./SetupSTM32CubeProgrammer-4.*.linux
+   ```
+3. Connect your ST-Link or debugger via USB
+4. From Linux command line:
+   ```bash
+   STM32_Programmer_CLI -c port=SWD -w ~/path/to/target.hex
+   ```
+
+### Why not Wine + USB passthrough?
+
+Wine's USB support requires:
+- `libusb` bindings in the prefix (complex)
+- Filesystem access permissions to `/dev/bus/usb/*`
+- Policy changes (`udev` rules)
+- Often still doesn't work for proprietary drivers like ST-Link
+
+**Bottom line:** Native Linux STM32CubeProgrammer is 100x simpler and more reliable.
