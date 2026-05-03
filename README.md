@@ -156,7 +156,36 @@ WINEPREFIX=~/.wine-touchgfx wine \
 
 ---
 
-## 10. Convenience aliases
+## 10. Add to the desktop application menu
+
+Create a `.desktop` entry so TouchGFX Designer appears in the GNOME/KDE **Programming** menu:
+
+```bash
+# Extract the icon from the exe
+sudo dnf install -y icoutils imagemagick
+wrestool -x -t 14 ~/.wine-touchgfx/drive_c/TouchGFX/4.26.1/designer/TouchGFXDesigner-4.26.1.exe -o /tmp/touchgfx.ico
+convert '/tmp/touchgfx.ico[0]' ~/.local/share/icons/touchgfx.png
+
+# Create the desktop entry
+cat > ~/.local/share/applications/touchgfx-designer.desktop << 'EOF'
+[Desktop Entry]
+Name=TouchGFX Designer 4.26.1
+Comment=STMicroelectronics TouchGFX UI Designer
+Exec=env WINEPREFIX=/home/dan/.wine-touchgfx wine /home/dan/.wine-touchgfx/drive_c/TouchGFX/4.26.1/designer/TouchGFXDesigner-4.26.1.exe
+Icon=touchgfx
+Terminal=false
+Type=Application
+Categories=Development;Programming;
+Keywords=touchgfx;stm32;embedded;ui;designer;
+StartupNotify=true
+EOF
+
+update-desktop-database ~/.local/share/applications/
+```
+
+---
+
+## 11. Convenience aliases
 
 Add to `~/.bashrc` or `~/.zshrc`:
 
@@ -228,7 +257,7 @@ Cosmetic only — the installation completes successfully. Can be ignored.
 
 ---
 
-## 11. Flashing firmware to hardware (STM32CubeProgrammer)
+## 12. Flashing firmware to hardware (STM32CubeProgrammer)
 
 The Designer's `Flash` build step calls `STM32CubeProgrammer` to program the board via USB/ST-Link. Wine cannot easily support USB device passthrough on Linux.
 
